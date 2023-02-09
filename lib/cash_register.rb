@@ -1,7 +1,10 @@
 class CashRegister
+
+  attr_accessor :discount
+
   def initialize(discount = nil)
-    @discount = discount
-    @total = 0
+    self.discount = discount
+    self.total = 0
     @register_items = []
   end
 
@@ -9,48 +12,42 @@ class CashRegister
 
     attr_accessor :title
     attr_accessor :price
+    attr_accessor :quantity
 
-    def initialize(title, price)
+    def initialize(title, price, quantity)
       self.title = title
       self.price = price
+      self.quantity = quantity
     end
 
     def toString
-      "#{self.title} (#{self.price})"
+      "#{self.title} (#{self.price}) [#{self.quantity}]"
     end
   end
 
   attr_accessor :total
 
   def add_item(title, price, quantity=1)
-    self.total = @total + (price * quantity)
-    quantity.times { @register_items.push(RegisterItem.new(title, price)) }
+    self.total = self.total + (price * quantity)
+    @register_items.push(RegisterItem.new(title, price, quantity))
   end
 
   def apply_discount
-    if @discount == nil
+    if self.discount == nil
       return "There is no discount to apply."
     else
-      self.total = (@total * (100-@discount) / 100)
+      self.total = (self.total * (100-self.discount) / 100)
     end
-    "After the discount, the total comes to $#{@total}."
+    "After the discount, the total comes to $#{self.total}."
   end
 
   def items
-    @register_items.map { |item| item.title }
+    @register_items.map { |item| (1..item.quantity).entries.map { item.title } }.flatten
   end
 
   def void_last_transaction
-    self.total = (@total - @register_items.pop.price)
+    last_transaction = @register_items.pop
+    #puts "#{last_transaction.toString} #{(last_transaction.price * last_transaction.quantity)} #{self.total}"
+    self.total = (self.total - (last_transaction.price * last_transaction.quantity)).round 2
   end
 end
-
-# cash_register = CashRegister.new(30)
-# cash_register.add_item("apple", 0.99,2)
-# cash_register.add_item("tomato", 1.76,3)
-# p cash_register.items
-# cash_register.void_last_transaction
-# p cash_register.items
-# cash_register.void_last_transaction
-# p cash_register.items
-# puts cash_register.total
